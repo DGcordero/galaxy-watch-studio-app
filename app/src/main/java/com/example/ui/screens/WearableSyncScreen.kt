@@ -19,6 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.model.SyncState
+import com.example.ui.components.WearableStatusIndicator
 import com.example.ui.theme.*
 import com.example.ui.viewmodel.WatchStudioViewModel
 import kotlinx.coroutines.launch
@@ -35,6 +36,7 @@ fun WearableSyncScreen(
     val syncProgress by viewModel.syncManager.syncProgress.collectAsState()
     val diagnostics by viewModel.syncManager.diagnostics.collectAsState()
     val activeWatchFace by viewModel.editingWatchFace.collectAsState()
+    val connectionStatus by viewModel.connectionStatus.collectAsState()
 
     var autoRotateDayNight by remember { mutableStateOf(true) }
     var highFrequencySensors by remember { mutableStateOf(true) }
@@ -58,12 +60,21 @@ fun WearableSyncScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column {
-                Text(
-                    text = "Ecosistema Galaxy Wearable",
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = TextPrimary
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "Ecosistema Wearable",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = TextPrimary
+                    )
+                    WearableStatusIndicator(
+                        status = connectionStatus,
+                        compact = true
+                    )
+                }
                 Text(
                     text = "Sincronización segura y diagnóstico One UI 6 Watch",
                     style = MaterialTheme.typography.bodySmall,
@@ -342,6 +353,116 @@ fun WearableSyncScreen(
             }
         }
 
+        // Galaxy Watch Ultra Connection & Troubleshooting Hub
+        Text(
+            text = "Asistente Samsung Galaxy Watch Ultra",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = GalaxyUltraOrange
+        )
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = DarkSurface),
+            shape = RoundedCornerShape(16.dp),
+            border = CardDefaults.outlinedCardBorder().copy(
+                brush = androidx.compose.ui.graphics.SolidColor(GalaxyUltraOrange.copy(alpha = 0.6f)),
+                width = 1.2.dp
+            )
+        ) {
+            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Icon(Icons.Default.Stars, contentDescription = null, tint = GalaxyUltraOrange)
+                        Column {
+                            Text("Diagnóstico Galaxy Watch Ultra / 7", fontWeight = FontWeight.Bold, color = TextPrimary)
+                            Text("Wear OS 5.0 • One UI 6.0 Watch • WFF Engine", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                        }
+                    }
+                    IconButton(
+                        onClick = { viewModel.syncManager.refreshPairedDevices() }
+                    ) {
+                        Icon(Icons.Default.Refresh, contentDescription = "Buscar dispositivos vinculados", tint = GalaxyCyan)
+                    }
+                }
+
+                Divider(color = DarkBorder)
+
+                Text(
+                    "Si tu Galaxy Watch Ultra no aparece conectado o no recibe la esfera, sigue estas soluciones:",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = TextSecondary
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Button(
+                        onClick = { viewModel.syncManager.openGalaxyWearableApp() },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(containerColor = DarkSurfaceVariant),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Icon(Icons.Default.Watch, contentDescription = null, tint = GalaxyCyan, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("App Wearable", fontSize = 11.sp, color = TextPrimary, fontWeight = FontWeight.Bold)
+                    }
+
+                    Button(
+                        onClick = { viewModel.syncManager.openGalaxyWatchUltraPlugin() },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(containerColor = DarkSurfaceVariant),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Icon(Icons.Default.Extension, contentDescription = null, tint = GalaxyUltraOrange, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Plugin Ultra", fontSize = 11.sp, color = TextPrimary, fontWeight = FontWeight.Bold)
+                    }
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = { viewModel.syncManager.openAppPermissionsSettings() },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = GalaxyCyan),
+                        border = ButtonDefaults.outlinedButtonBorder.copy(
+                            brush = androidx.compose.ui.graphics.SolidColor(GalaxyCyan)
+                        ),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Icon(Icons.Default.Security, contentDescription = null, modifier = Modifier.size(14.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Permisos App", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    }
+
+                    Button(
+                        onClick = {
+                            coroutineScope.launch {
+                                viewModel.syncManager.reconnectAndRepairWearable().collect { msg ->
+                                    diagnosticMessage = msg
+                                }
+                            }
+                        },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(containerColor = GalaxyEmerald),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Icon(Icons.Default.Autorenew, contentDescription = null, tint = Color.Black, modifier = Modifier.size(14.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Reconectar Todo", fontSize = 11.sp, color = Color.Black, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+        }
+
         // Devices Selector
         Text(
             text = "Dispositivos Galaxy Vinculados",
@@ -591,27 +712,43 @@ fun WearableSyncScreen(
             onDismissRequest = { showPairingGuideDialog = false },
             title = {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Icon(Icons.Default.Watch, contentDescription = null, tint = GalaxyCyan)
-                    Text("Guía de Vinculación Galaxy Watch", fontWeight = FontWeight.Bold)
+                    Icon(Icons.Default.Stars, contentDescription = null, tint = GalaxyUltraOrange)
+                    Text("Guía Galaxy Watch Ultra", fontWeight = FontWeight.Bold)
                 }
             },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Column(
+                    modifier = Modifier.verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
                     Text(
-                        "Pasos para asegurar la conexión óptima:",
+                        "Samsung Galaxy Watch Ultra (Wear OS 5 / One UI 6)",
                         fontWeight = FontWeight.Bold,
-                        color = GalaxyCyan,
+                        color = GalaxyUltraOrange,
                         fontSize = 13.sp
                     )
-                    GuideStep(1, "Activa el Bluetooth y la Ubicación en tu teléfono móvil.")
-                    GuideStep(2, "Abre la aplicación Samsung Galaxy Wearable y confirma que tu reloj figure como 'Conectado'.")
-                    GuideStep(3, "En Galaxy Watch Studio, pulsa 'Sincronizar ahora' para transferir el paquete seguro Watch Face Format (WFF).")
-                    GuideStep(4, "En tu reloj, mantén pulsada la esfera actual y selecciona tu nuevo diseño.")
+
+                    GuideStep(1, "Emparejamiento Oficial: Asegúrate de que el reloj esté vinculado en la app Galaxy Wearable y que el 'Galaxy Watch Ultra Plugin' esté instalado y actualizado.")
+                    GuideStep(2, "Permisos del Teléfono: Concede permiso de 'Dispositivos cercanos / Bluetooth' y 'Ubicación' en Ajustes de la App.")
+                    GuideStep(3, "Misma Red Wi-Fi: Para sincronización de alta velocidad, conecta el móvil y el Galaxy Watch Ultra a la misma red Wi-Fi.")
+                    GuideStep(4, "Instalación Directa WFF: En el reloj, ve a Ajustes > Información del reloj > Software > Pulsa 7 veces en 'Versión de software' para activar Opciones de Desarrollador. Luego activa 'Depuración inalámbrica' si utilizas transferencia directa ADB.")
+                    GuideStep(5, "Toca el botón 'Buscar dispositivos vinculados' (icono de recarga) en la barra superior para autodetectar tu reloj.")
                 }
             },
             confirmButton = {
-                TextButton(onClick = { showPairingGuideDialog = false }) {
-                    Text("Entendido", color = GalaxyCyan, fontWeight = FontWeight.Bold)
+                Button(
+                    onClick = { showPairingGuideDialog = false },
+                    colors = ButtonDefaults.buttonColors(containerColor = GalaxyUltraOrange)
+                ) {
+                    Text("Entendido", color = Color.White, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showPairingGuideDialog = false
+                    viewModel.syncManager.openGalaxyWearableApp()
+                }) {
+                    Text("Abrir Wearable", color = GalaxyCyan)
                 }
             },
             containerColor = DarkSurface,

@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.sp
 import com.example.model.*
 import com.example.ui.components.GalaxyWatchCanvas
 import com.example.ui.components.WatchViewMode
+import com.example.ui.components.WearableStatusIndicator
 import com.example.ui.dialogs.ComplicationDetailDialog
 import com.example.ui.dialogs.ComplicationPickerSheet
 import com.example.ui.dialogs.ShareExportDialog
@@ -43,6 +44,7 @@ fun StudioEditorScreen(
     val healthData by viewModel.healthSnapshot.collectAsState()
     val viewMode by viewModel.viewMode.collectAsState()
     val selectedTab by viewModel.selectedEditorTab.collectAsState()
+    val connectionStatus by viewModel.connectionStatus.collectAsState()
 
     // Dialog & sheet states
     var activeSlotForPicker by remember { mutableStateOf<ComplicationSlot?>(null) }
@@ -67,13 +69,22 @@ fun StudioEditorScreen(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = watchFace.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = TextPrimary,
-                    maxLines = 1
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = watchFace.title,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = TextPrimary,
+                        maxLines = 1
+                    )
+                    WearableStatusIndicator(
+                        status = connectionStatus,
+                        compact = true
+                    )
+                }
                 Text(
                     text = "${watchFace.category} • One UI 6 Watch",
                     style = MaterialTheme.typography.bodySmall,

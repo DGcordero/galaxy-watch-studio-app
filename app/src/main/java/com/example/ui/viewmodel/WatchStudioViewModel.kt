@@ -47,6 +47,10 @@ class WatchStudioViewModel(application: Application) : AndroidViewModel(applicat
     private val _userMessage = MutableStateFlow<String?>(null)
     val userMessage: StateFlow<String?> = _userMessage.asStateFlow()
 
+    // Wearable Data Layer connection state
+    val connectionStatus: StateFlow<ConnectionStatus> = syncManager.connectionStatus
+    val isWearableConnected: StateFlow<Boolean> = syncManager.isWearableConnected
+
     init {
         viewModelScope.launch {
             allWatchFaces.collect { list ->
@@ -137,7 +141,24 @@ class WatchStudioViewModel(application: Application) : AndroidViewModel(applicat
         }
     }
 
+    fun checkWatchConnectionEligibility(): Boolean {
+        val currentDevices = syncManager.devices.value
+        val selectedId = syncManager.selectedDeviceId.value
+        if (currentDevices.isEmpty()) {
+            _userMessage.value = "No hay ningún reloj vinculado. Empareja tu Samsung Galaxy Watch en Galaxy Wearable."
+            return false
+        }
+        val target = currentDevices.find { it.id == selectedId } ?: currentDevices.first()
+        if (!target.isConnected) {
+            _userMessage.value = "El reloj '${target.modelName}' no está conectado. Activa Bluetooth y abre Galaxy Wearable."
+            return false
+        }
+        return true
+    }
+
     fun applyAndSyncActiveWatchFace(watchFace: WatchFaceEntity) {
+        if (!checkWatchConnectionEligibility()) return
+
         viewModelScope.launch {
             repository.setActiveWatchFace(watchFace.id)
             _editingWatchFace.value = watchFace.copy(isCurrentActive = true)

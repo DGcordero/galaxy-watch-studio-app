@@ -26,6 +26,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.ui.screens.GalleryScreen
 import com.example.ui.screens.HealthMetricsScreen
 import com.example.ui.screens.StudioEditorScreen
+import com.example.ui.screens.WatchfaceEditorScreen
 import com.example.ui.screens.WearableSyncScreen
 import com.example.ui.theme.*
 import com.example.ui.viewmodel.WatchStudioViewModel
@@ -141,7 +142,7 @@ fun MainAppContent(viewModel: WatchStudioViewModel) {
                 .padding(innerPadding)
         ) {
             composable(MainDestination.STUDIO.route) {
-                StudioEditorScreen(
+                WatchfaceEditorScreen(
                     viewModel = viewModel,
                     modifier = Modifier.fillMaxSize()
                 )
