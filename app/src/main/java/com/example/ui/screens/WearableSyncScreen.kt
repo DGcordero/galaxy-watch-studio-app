@@ -29,6 +29,7 @@ fun WearableSyncScreen(
     modifier: Modifier = Modifier
 ) {
     val coroutineScope = rememberCoroutineScope()
+    val context = androidx.compose.ui.platform.LocalContext.current
     val devices by viewModel.syncManager.devices.collectAsState()
     val selectedDeviceId by viewModel.syncManager.selectedDeviceId.collectAsState()
     val syncProgress by viewModel.syncManager.syncProgress.collectAsState()
@@ -439,6 +440,93 @@ fun WearableSyncScreen(
                         onCheckedChange = { highFrequencySensors = it },
                         colors = SwitchDefaults.colors(checkedThumbColor = GalaxyEmerald)
                     )
+                }
+            }
+        }
+
+        // APK & Package Manager Card
+        Text(
+            text = "Distribución y Paquete APK",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = TextPrimary
+        )
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = DarkSurface),
+            shape = RoundedCornerShape(16.dp),
+            border = CardDefaults.outlinedCardBorder().copy(
+                brush = androidx.compose.ui.graphics.SolidColor(GalaxyEmerald.copy(alpha = 0.5f)),
+                width = 1.dp
+            )
+        ) {
+            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Icon(Icons.Default.Android, contentDescription = null, tint = GalaxyEmerald)
+                        Column {
+                            Text("Paquete APK Generado", fontWeight = FontWeight.Bold, color = TextPrimary)
+                            Text("app-debug.apk • Versión 1.0.0 (Build 1)", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                        }
+                    }
+                    Badge(containerColor = GalaxyEmerald.copy(alpha = 0.2f)) {
+                        Text("LISTO", color = GalaxyEmerald, fontWeight = FontWeight.Bold, fontSize = 10.sp)
+                    }
+                }
+
+                Divider(color = DarkBorder)
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text("Ruta de compilación:", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                    Text("app/build/outputs/apk/debug/", style = MaterialTheme.typography.bodySmall, color = GalaxyCyan, fontWeight = FontWeight.Medium)
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text("Compatibilidad:", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                    Text("Android 9.0+ & Wear OS 5", style = MaterialTheme.typography.bodySmall, color = TextPrimary, fontWeight = FontWeight.Medium)
+                }
+
+                Button(
+                    onClick = {
+                        val shareIntent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                            type = "text/plain"
+                            putExtra(
+                                android.content.Intent.EXTRA_SUBJECT,
+                                "Galaxy Watch Studio - Instrucciones de Instalación APK"
+                            )
+                            putExtra(
+                                android.content.Intent.EXTRA_TEXT,
+                                "Galaxy Watch Studio APK compilado exitosamente.\n\n" +
+                                "Para descargar el instalador APK directamente en tu dispositivo:\n" +
+                                "1. Abre el menú Ajustes (⚙️) en la barra superior de AI Studio.\n" +
+                                "2. Haz clic en 'Generate APK' / 'Download APK'.\n" +
+                                "3. Instala el archivo en tu teléfono Samsung o Wear OS para sincronizar tus esferas."
+                            )
+                            addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                        }
+                        val chooser = android.content.Intent.createChooser(shareIntent, "Compartir detalles del APK").apply {
+                            addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                        }
+                        context.startActivity(chooser)
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = GalaxyEmerald),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Icon(Icons.Default.Download, contentDescription = null, tint = Color.Black)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Instrucciones y Descarga del APK", color = Color.Black, fontWeight = FontWeight.Bold)
                 }
             }
         }
